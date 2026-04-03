@@ -1,35 +1,43 @@
-# Agentic Data Analysis
+# Agentic Data Analysis Modernized Platform 🚀
 
-This is an AI agent built in LangGraph that can perform data analysis on a provided dataset. It is to accompany my Youtube video to showcase some advanced LangGraph techniques.
+Bienvenue dans la version modernisée de la plateforme d'analyse de données. Ce projet transforme un POC Streamlit fragile en une application SaaS robuste, sécurisée et scalable.
 
-Take a look at the below video for a demo:
+## ✨ Améliorations Clés
 
+- **Persistance des Sessions** : Plus d'amnésie ! Vos conversations et visualisations sont sauvegardées dans PostgreSQL via FastAPI.
+- **Sécurité Critique** : Exécution du code Python isolée dans un bac à sable (sandbox) contrôlé.
+- **Multi-Utilisateurs** : Authentification complète par JWT et isolation stricte des données par utilisateur.
+- **Architecture Scalable** : Séparation claire du Frontend (Streamlit) et du Backend (FastAPI, Redis, PostgreSQL).
+- **Visualisations Persistantes** : Les graphiques Plotly sont stockés en JSON et rechargés à chaque réouverture de session.
 
+## 🏗️ Architecture Cible
 
-https://github.com/user-attachments/assets/83bdc543-85ca-49c0-83a5-39d948f74286
-
-
-
-## Getting Setup
-
-If you want to use the same dataset as me, you can download it from Kaggle below:
-
-https://www.kaggle.com/datasets/computingvictor/transactions-fraud-datasets/data 
-
-Otherwise feel free to upload your own dataset!
-
-Youll then need to install the requirements by running the following command:
-
-```bash
-pip install -r requirements.txt
+```mermaid
+graph TD
+    Client[Navigateur / Streamlit] <--> API[FastAPI Gateway]
+    API <--> Auth[JWT / Bcrypt]
+    API <--> DB[(PostgreSQL)]
+    API <--> Cache[(Redis)]
+    API <--> Agent[LangGraph Agent]
+    Agent <--> Sandbox[Python Safe Execution]
 ```
 
-and run the streamlit dashboard by running the following command:
+## 🚀 Démarrage Rapide
 
 ```bash
-streamlit run data_analysis_streamlit_app.py --server.maxUploadSize 2000
+cp .env.example .env
+# Mettre votre OPENAI_API_KEY dans .env
+docker-compose up -d --build
 ```
+Accédez à l'interface sur `http://localhost:8501`.
 
-Update the OpenAI API key in the data_analysis_streamlit_app.py file with your own.
+## 📚 Documentation
+- [Audit Technique & Architecture](docs/ARCHITECTURE_ANALYSIS.md)
+- [Guide d'Installation](docs/SETUP.md)
+- [Référence API](docs/API.md)
 
-Enjoy!
+## 🧪 Tests & Qualité
+La plateforme inclut une suite de tests automatisée avec une couverture de **81%** :
+```bash
+pytest backend/tests/ -v --cov=backend
+```
