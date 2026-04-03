@@ -6,6 +6,7 @@ plotly
 langchain
 langgraph
 langchain-openai
+langchain-groq
 fastapi
 uvicorn
 sqlalchemy

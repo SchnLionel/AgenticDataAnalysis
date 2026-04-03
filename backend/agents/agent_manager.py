@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 from typing import List, Dict, Any, Annotated, TypedDict
-from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 from langchain_core.tools import tool
 from langgraph.graph import StateGraph, END
@@ -71,7 +71,12 @@ def execute_statistical_analysis(thought: str, python_code: str, state: Annotate
 # --- Graph Nodes ---
 
 def call_model(state: AgentState):
-    model = ChatOpenAI(api_key=settings.OPENAI_API_KEY, model="gpt-4o")
+    # Using Llama 3 70B via Groq for high performance
+    model = ChatGroq(
+        api_key=settings.GROQ_API_KEY, 
+        model="llama3-70b-8192",
+        temperature=0.1
+    )
     tools = [execute_data_cleaning, execute_visualization, execute_statistical_analysis]
     model_with_tools = model.bind_tools(tools)
     response = model_with_tools.invoke(state["messages"])
