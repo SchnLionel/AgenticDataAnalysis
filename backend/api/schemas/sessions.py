@@ -6,6 +6,9 @@ class VisualizationBase(BaseModel):
     figure_json: Dict[str, Any]
     title: Optional[str] = None
 
+    class Config:
+        from_attributes = True
+
 class MessageBase(BaseModel):
     role: str
     content: str
@@ -18,6 +21,9 @@ class MessageBase(BaseModel):
 class SessionBase(BaseModel):
     title: str
     dataset_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
 
 class SessionCreate(SessionBase):
     pass
@@ -35,8 +41,14 @@ class Session(SessionBase):
 class SessionDetail(Session):
     messages: List[MessageBase]
 
+    class Config:
+        from_attributes = True
+
 class DatasetBase(BaseModel):
     filename: str
+
+    class Config:
+        from_attributes = True
 
 class Dataset(DatasetBase):
     id: int
@@ -52,6 +64,12 @@ class Dataset(DatasetBase):
 class QueryRequest(BaseModel):
     query: str
 
+    class Config:
+        from_attributes = True
+
 class QueryResponse(BaseModel):
     synthesis: str
     figures: List[Dict[str, Any]]
+
+    class Config:
+        from_attributes = True

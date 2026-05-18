@@ -152,7 +152,7 @@ class AgentManager:
             return "tools"
         return END
 
-    async def process_query(self, db, session_id: int, user_id: int, query: str):
+    def process_query(self, db, session_id: int, user_id: int, query: str):
         # 1. Load session context
         session = db.query(models.AnalysisSession).filter(
             models.AnalysisSession.id == session_id,
@@ -175,7 +175,7 @@ class AgentManager:
         # 3. Load dataset variables
         current_variables = {}
         if session.dataset_id:
-            dataset = db.query(models.Dataset).get(session.dataset_id)
+            dataset = db.get(models.Dataset, session.dataset_id)
             if dataset:
                 df = pd.read_csv(dataset.file_path)
                 var_name = dataset.filename.split('.')[0]

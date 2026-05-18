@@ -20,13 +20,21 @@ with st.sidebar:
     if st.session_state.get("show_new_session_form"):
         with st.form("new_session_form"):
             title = st.text_input("Session Title", value="New Analysis")
-            datasets = client.list_datasets()
+            try:
+                datasets = client.list_datasets()
+            except Exception as e:
+                st.error(f"Failed to load datasets: {e}")
+                datasets = []
             ds_names = {f"{ds['filename']} (ID: {ds['id']})": ds['id'] for ds in datasets}
             selected_ds = st.selectbox("Select Dataset", options=["None"] + list(ds_names.keys()))
             
             if st.form_submit_button("Create"):
                 ds_id = ds_names[selected_ds] if selected_ds != "None" else None
-                new_session = client.create_session(title, ds_id)
+                try:
+                    new_session = client.create_session(title, ds_id)
+                except Exception as e:
+                    st.error(f"Failed to create session: {e}")
+                    new_session = None
                 if new_session:
                     st.session_state.current_session_id = new_session["id"]
                     st.session_state.show_new_session_form = False
@@ -38,7 +46,11 @@ with st.sidebar:
     st.divider()
     
     # Load past sessions
-    sessions = client.get_sessions()
+    try:
+        sessions = client.get_sessions()
+    except Exception as e:
+        st.error(f"Failed to load sessions: {e}")
+        sessions = []
     for session in sessions:
         if st.button(f"📁 {session['title']}", key=f"session_{session['id']}"):
             st.session_state.current_session_id = session["id"]
@@ -49,9 +61,10 @@ if "current_session_id" in st.session_state:
     session_id = st.session_state.current_session_id
     
     # Load session detail (with history)
-    session_detail = client.get_session_detail(session_id)
-    if not session_detail:
-        st.error("Could not load session.")
+    try:
+        session_detail = client.get_session_detail(session_id)
+    except Exception as e:
+        st.error(f"Failed to load session details: {e}")
         st.stop()
     
     st.info(f"**Session:** {session_detail['title']} | **Dataset:** {session_detail['dataset_id'] if session_detail['dataset_id'] else 'None'}")

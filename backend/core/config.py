@@ -20,12 +20,35 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = ""
     
     # CORS
-    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:8501"]
+    BACKEND_CORS_ORIGINS: List[str] = [
+        "http://localhost:8501",
+        "http://127.0.0.1:8501",
+        "http://localhost",
+        "http://127.0.0.1",
+    ]
     
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",
         case_sensitive=True
     )
+
+    def __init__(self, **values):
+        super().__init__(**values)
+        import os
+        import sys
+        # Skip validation during tests
+        is_test = "pytest" in sys.modules or "pytest" in os.environ.get("PYTEST_CURRENT_TEST", "") or "test" in os.environ.get("DATABASE_URL", "")
+        if not is_test:
+            if self.SECRET_KEY == "your-secret-key-for-jwt" or len(self.SECRET_KEY) < 16:
+                raise ValueError(
+                    "CRITICAL SECURITY ERROR: SECRET_KEY is set to the insecure default or is too short! "
+                    "You must configure a strong, unique SECRET_KEY (e.g. via environment variables) for production/real-use."
+                )
+            if not self.GROQ_API_KEY:
+                raise ValueError(
+                    "CRITICAL CONFIGURATION ERROR: GROQ_API_KEY is missing! "
+                    "This environment variable must be defined for the Agentic Data Analysis platform to perform LLM reasoning."
+                )
 
 settings = Settings()

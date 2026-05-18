@@ -15,9 +15,9 @@ from backend.agents.agent_manager import AgentManager
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 agent_manager = AgentManager()
 
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = os.path.abspath("uploads")
 if not os.path.exists(UPLOAD_DIR):
-    os.makedirs(UPLOAD_DIR)
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/", response_model=schemas.Session)
 def create_session(
@@ -43,20 +43,6 @@ def list_sessions(
     return db.query(models.AnalysisSession).filter(
         models.AnalysisSession.user_id == current_user.id
     ).order_by(models.AnalysisSession.created_at.desc()).all()
-
-@router.get("/{session_id}", response_model=schemas.SessionDetail)
-def get_session(
-    session_id: int,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
-):
-    session = db.query(models.AnalysisSession).filter(
-        models.AnalysisSession.id == session_id,
-        models.AnalysisSession.user_id == current_user.id
-    ).first()
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-    return session
 
 @router.post("/upload", response_model=schemas.Dataset)
 async def upload_dataset(
@@ -94,20 +80,48 @@ def list_datasets(
 ):
     return db.query(models.Dataset).filter(models.Dataset.user_id == current_user.id).all()
 
-@router.post("/{session_id}/query", response_model=schemas.QueryResponse)
-async def process_agent_query(
+@router.get("/{session_id}", response_model=schemas.SessionDetail)
+def get_session(
     session_id: int,
-    request: schemas.QueryRequest,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
+    session = db.query(models.AnalysisSession).filter(
+        models.AnalysisSession.id == session_id,
+        models.AnalysisSession.user_id == current_user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return session
+
+@router.post("/{session_id}/query")
+async def process_agent_query(
+    session_id: int,
+    request: schemas.QueryRequest,
+    current_user: models.User = Depends(get_current_user)
+):
+    from backend.tasks import process_agent_query_task
     try:
-        result = await agent_manager.process_query(
-            db=db,
+        # Enqueue the task
+        task = process_agent_query_task.delay(
             session_id=session_id,
             user_id=current_user.id,
             query=request.query
         )
-        return result
+        return {"task_id": task.id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/tasks/{task_id}")
+async def get_task_status(task_id: str):
+    from backend.celery_app import celery_app
+    task_result = celery_app.AsyncResult(task_id)
+    
+    if task_result.state == 'PENDING':
+        return {"status": "processing"}
+    elif task_result.state == 'SUCCESS':
+        return {"status": "completed", "result": task_result.result}
+    elif task_result.state == 'FAILURE':
+        return {"status": "failed", "error": str(task_result.info)}
+    else:
+        return {"status": task_result.state.lower()}

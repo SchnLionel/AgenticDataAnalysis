@@ -41,8 +41,16 @@ Tous les endpoints (sauf `/health`, `/metrics`, `/auth/register` et `/auth/login
 - **Méthode** : `GET`
 
 ## Agent d'Analyse
-### Poser une question
+### Poser une question (Asynchrone Celery)
 - **URL** : `/api/v1/sessions/{session_id}/query`
 - **Méthode** : `POST`
 - **Corps** : `{"query": "Fais un histogramme de l'âge"}`
-- **Réponse** : `{"synthesis": "...", "figures": [...]}`
+- **Réponse** : `{"task_id": "..."}`
+
+### Obtenir le statut d'une tâche d'analyse
+- **URL** : `/api/v1/sessions/tasks/{task_id}`
+- **Méthode** : `GET`
+- **Réponse** (En cours) : `{"status": "processing"}`
+- **Réponse** (Terminé) : `{"status": "completed", "result": {"synthesis": "...", "figures": [...]}}`
+- **Réponse** (Échoué) : `{"status": "failed", "error": "..."}`
+

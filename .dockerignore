@@ -1,0 +1,10 @@
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+*.log
+test.db
+test-results.txt
+.env
+.pytest_cache/

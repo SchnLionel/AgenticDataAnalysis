@@ -45,8 +45,8 @@ else:
     st.info("👈 Use the sidebar to navitage to the Analysis page.")
     
     # We can use st.Page for a better navigation if we อยาก
-    analysis_page = st.Page("frontend/pages/analysis.py", title="Data Analysis", icon="📈")
-    dataset_page = st.Page("frontend/pages/datasets.py", title="My Datasets", icon="📁")
+    analysis_page = st.Page("pages/analysis.py", title="Data Analysis", icon="📈")
+    dataset_page = st.Page("pages/datasets.py", title="My Datasets", icon="📁")
     
     pg = st.navigation([analysis_page, dataset_page])
     pg.run()
