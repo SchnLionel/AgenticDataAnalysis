@@ -266,5 +266,5 @@ class AgentManager:
         
         return {
             "synthesis": assistant_msg.content,
-            "figures": final_state.get("output_figures", [])
+            "figures": [json.loads(fig) for fig in final_state.get("output_figures", [])]
         }
