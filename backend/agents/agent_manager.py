@@ -71,6 +71,37 @@ def execute_statistical_analysis(thought: str, python_code: str, state: Annotate
 # --- Graph Nodes ---
 
 def call_model(state: AgentState):
+    from langchain_core.messages import SystemMessage
+    
+    # Analyze the loaded variables to describe them to the agent
+    variable_descriptions = []
+    for name, val in state.get("current_variables", {}).items():
+        if isinstance(val, pd.DataFrame):
+            cols = list(val.columns)
+            variable_descriptions.append(
+                f"- DataFrame `{name}` is loaded and available. Columns: {cols}. Row count: {len(val)}."
+            )
+        else:
+            variable_descriptions.append(f"- Variable `{name}` is available in the environment.")
+            
+    variables_str = "\n".join(variable_descriptions) if variable_descriptions else "No DataFrames are currently loaded."
+    
+    system_prompt = (
+        "You are an advanced Agentic Data Analyst capable of cleaning data, performing statistical analysis, "
+        "and creating beautiful visualizations using Plotly. You have access to a secure Python execution sandbox.\n\n"
+        "### Available Variables in Sandbox:\n"
+        f"{variables_str}\n\n"
+        "### Guidelines:\n"
+        "1. To analyze or clean data, use the `execute_data_cleaning` or `execute_statistical_analysis` tools. "
+        "Provide a clear thought explaining what you're doing, and write clean, valid Python code.\n"
+        "2. To create visualizations, use the `execute_visualization` tool. The code must append one or more Plotly figure objects "
+        "to a list named `plotly_figures` (which is pre-declared in the sandbox). Example: `plotly_figures.append(px.histogram(test_dataset, x='score'))`.\n"
+        "3. Ensure that you refer to the DataFrames by their exact variable names (e.g. refer to the loaded DataFrame as the actual name, such as `test_dataset`).\n"
+        "4. Avoid generic conversational refusal. If the user asks for analysis, statistical summary, or visualization, use your tools to perform the task."
+    )
+    
+    messages = [SystemMessage(content=system_prompt)] + state["messages"]
+
     # Using Llama 3 70B via Groq for high performance
     model = ChatGroq(
         api_key=settings.GROQ_API_KEY, 
@@ -79,7 +110,7 @@ def call_model(state: AgentState):
     )
     tools = [execute_data_cleaning, execute_visualization, execute_statistical_analysis]
     model_with_tools = model.bind_tools(tools)
-    response = model_with_tools.invoke(state["messages"])
+    response = model_with_tools.invoke(messages)
     return {"messages": [response]}
 
 def call_tools(state: AgentState):
