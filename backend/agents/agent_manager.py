@@ -102,10 +102,10 @@ def call_model(state: AgentState):
     
     messages = [SystemMessage(content=system_prompt)] + state["messages"]
 
-    # Using Llama 3 70B via Groq for high performance
+    # Using Llama 3.1 8B via Groq for high speed and avoiding rate limits
     model = ChatGroq(
         api_key=settings.GROQ_API_KEY, 
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         temperature=0.1
     )
     tools = [execute_data_cleaning, execute_visualization, execute_statistical_analysis]
