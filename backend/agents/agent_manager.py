@@ -54,6 +54,10 @@ def execute_statistical_analysis(thought: str, python_code: str):
 
 def call_model(state: AgentState):
     from langchain_core.messages import SystemMessage
+    import time
+    
+    # Pace requests to respect Groq rate limits
+    time.sleep(2.0)
     
     # Analyze the loaded variables to describe them to the agent
     variable_descriptions = []

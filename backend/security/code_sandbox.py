@@ -39,6 +39,7 @@ def execute_code_safely(code: str, persistent_vars: Dict[str, Any], timeout: int
             "ValueError": ValueError,
             "TypeError": TypeError,
             "MemoryError": MemoryError,
+            "__import__": __import__,
         },
         "pd": pd,
         "np": np,
