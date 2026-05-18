@@ -74,7 +74,7 @@ def call_model(state: AgentState):
     # Using Llama 3 70B via Groq for high performance
     model = ChatGroq(
         api_key=settings.GROQ_API_KEY, 
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-specdec",
         temperature=0.1
     )
     tools = [execute_data_cleaning, execute_visualization, execute_statistical_analysis]
