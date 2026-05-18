@@ -24,49 +24,31 @@ class AgentState(TypedDict):
 
 # --- Tools Definition ---
 
-@tool
-def execute_data_cleaning(thought: str, python_code: str, state: Annotated[dict, "Current agent state"]):
-    """
-    Cleans and transforms the user's dataset.
-    Use this for handling missing values, duplicates, and type boat conversions.
-    """
-    result = execute_code_safely(python_code, state["current_variables"])
-    return {
-        "output": result["output"],
-        "thought": thought,
-        "code": python_code,
-        "new_variables": result["persistent_vars"]
-    }
+# --- Tools Definition ---
 
 @tool
-def execute_visualization(thought: str, python_code: str, state: Annotated[dict, "Current agent state"]):
+def execute_data_cleaning(thought: str, python_code: str):
+    """
+    Cleans and transforms the user's dataset.
+    Use this for handling missing values, duplicates, and type conversions.
+    """
+    return "Executed"
+
+@tool
+def execute_visualization(thought: str, python_code: str):
     """
     Generates Plotly figures for data visualization.
     The code should append figures to a list named `plotly_figures`.
-    Example: `plotly_figures.append(px.histogram(df, x='age'))`
+    Example: `plotly_figures.append(px.histogram(test_dataset, x='score'))`
     """
-    result = execute_code_safely(python_code, state["current_variables"])
-    figures_json = [pio.to_json(fig) for fig in result["plotly_figures"]]
-    return {
-        "output": result["output"],
-        "thought": thought,
-        "code": python_code,
-        "figures": figures_json,
-        "new_variables": result["persistent_vars"]
-    }
+    return "Executed"
 
 @tool
-def execute_statistical_analysis(thought: str, python_code: str, state: Annotated[dict, "Current agent state"]):
+def execute_statistical_analysis(thought: str, python_code: str):
     """
     Performs statistical analyses (correlations, t-tests, etc.) using pandas/scipy/numpy.
     """
-    result = execute_code_safely(python_code, state["current_variables"])
-    return {
-        "output": result["output"],
-        "thought": thought,
-        "code": python_code,
-        "new_variables": result["persistent_vars"]
-    }
+    return "Executed"
 
 # --- Graph Nodes ---
 
@@ -114,13 +96,8 @@ def call_model(state: AgentState):
     return {"messages": [response]}
 
 def call_tools(state: AgentState):
-    """Custom tool node to handle our specialized outputs"""
+    """Custom tool node to handle our specialized outputs and execute them in the sandbox"""
     last_message = state["messages"][-1]
-    tool_map = {
-        "execute_data_cleaning": execute_data_cleaning,
-        "execute_visualization": execute_visualization,
-        "execute_statistical_analysis": execute_statistical_analysis
-    }
     
     new_messages = []
     intermediate_outputs = []
@@ -130,30 +107,47 @@ def call_tools(state: AgentState):
     for tool_call in last_message.tool_calls:
         tool_name = tool_call["name"]
         tool_args = tool_call["args"]
-        # Pass state to tools that need it
-        tool_args["state"] = state
         
-        tool_func = tool_map[tool_name]
-        result = tool_func.invoke(tool_args)
+        python_code = tool_args.get("python_code", "")
+        thought = tool_args.get("thought", "")
         
-        # result is a dict with output, thought, code, etc.
+        # Execute code in the sandbox safely using our copied variables
+        if tool_name == "execute_visualization":
+            result = execute_code_safely(python_code, current_variables)
+            figures_json = [pio.to_json(fig) for fig in result.get("plotly_figures", [])]
+            tool_output = {
+                "output": result["output"],
+                "thought": thought,
+                "code": python_code,
+                "figures": figures_json,
+                "new_variables": result["persistent_vars"]
+            }
+            output_figures.extend(figures_json)
+        elif tool_name in ["execute_data_cleaning", "execute_statistical_analysis"]:
+            result = execute_code_safely(python_code, current_variables)
+            tool_output = {
+                "output": result["output"],
+                "thought": thought,
+                "code": python_code,
+                "new_variables": result["persistent_vars"]
+            }
+        else:
+            continue
+            
         from langchain_core.messages import ToolMessage
         new_messages.append(ToolMessage(
             tool_call_id=tool_call["id"],
-            content=json.dumps(result["output"])
+            content=json.dumps(tool_output["output"])
         ))
         
         intermediate_outputs.append({
-            "thought": result["thought"],
-            "code": result["code"],
-            "output": result["output"]
+            "thought": tool_output["thought"],
+            "code": tool_output["code"],
+            "output": tool_output["output"]
         })
         
-        if "figures" in result:
-            output_figures.extend(result["figures"])
-            
-        if "new_variables" in result:
-            current_variables.update(result["new_variables"])
+        if "new_variables" in tool_output:
+            current_variables.update(tool_output["new_variables"])
 
     return {
         "messages": new_messages,
