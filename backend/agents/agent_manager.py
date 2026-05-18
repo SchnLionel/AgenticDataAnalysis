@@ -115,9 +115,16 @@ def call_tools(state: AgentState):
         python_code = tool_args.get("python_code", "")
         thought = tool_args.get("thought", "")
         
+        print(f"--- CALLING TOOL: {tool_name} ---", flush=True)
+        print(f"Thought: {thought}", flush=True)
+        print(f"Code:\n{python_code}", flush=True)
+        
         # Execute code in the sandbox safely using our copied variables
         if tool_name == "execute_visualization":
             result = execute_code_safely(python_code, current_variables)
+            print(f"Sandbox Result Success: {result.get('success')}", flush=True)
+            print(f"Sandbox Result Error: {result.get('error')}", flush=True)
+            print(f"Sandbox Output: {result.get('output')}", flush=True)
             figures_json = [pio.to_json(fig) for fig in result.get("plotly_figures", [])]
             tool_output = {
                 "output": result["output"],
@@ -129,6 +136,9 @@ def call_tools(state: AgentState):
             output_figures.extend(figures_json)
         elif tool_name in ["execute_data_cleaning", "execute_statistical_analysis"]:
             result = execute_code_safely(python_code, current_variables)
+            print(f"Sandbox Result Success: {result.get('success')}", flush=True)
+            print(f"Sandbox Result Error: {result.get('error')}", flush=True)
+            print(f"Sandbox Output: {result.get('output')}", flush=True)
             tool_output = {
                 "output": result["output"],
                 "thought": thought,
