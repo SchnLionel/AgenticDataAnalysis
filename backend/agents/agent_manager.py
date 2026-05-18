@@ -13,8 +13,15 @@ from backend.db import models
 from backend.security.code_sandbox import execute_code_safely
 from backend.core.config import settings
 
+def merge_messages(left: list, right: list) -> list:
+    if not left:
+        left = []
+    if not right:
+        right = []
+    return left + right
+
 class AgentState(TypedDict):
-    messages: Annotated[List[BaseMessage], "The messages in the conversation"]
+    messages: Annotated[List[BaseMessage], merge_messages]
     current_variables: Dict[str, Any]
     session_id: int
     user_id: int
@@ -104,8 +111,8 @@ def call_tools(state: AgentState):
     last_message = state["messages"][-1]
     
     new_messages = []
-    intermediate_outputs = []
-    output_figures = []
+    intermediate_outputs = state.get("intermediate_outputs", []).copy()
+    output_figures = state.get("output_figures", []).copy()
     current_variables = state["current_variables"].copy()
 
     for tool_call in last_message.tool_calls:
