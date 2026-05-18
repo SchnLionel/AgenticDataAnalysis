@@ -50,7 +50,7 @@ async def upload_dataset(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    if not file.filename.endswith('.csv'):
+    if not file.filename.lower().endswith('.csv'):
         raise HTTPException(status_code=400, detail="Only CSV files are allowed")
     
     file_path = os.path.join(UPLOAD_DIR, f"{current_user.id}_{file.filename}")

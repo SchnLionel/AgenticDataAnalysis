@@ -10,6 +10,13 @@ from typing import Any, Dict
 def timeout_handler(signum, frame):
     raise TimeoutError("Execution timed out")
 
+def safe_import(name, globals=None, locals=None, fromlist=(), level=0):
+    blocked = ["os", "sys", "subprocess", "socket", "shutil", "pty", "ctypes", "pathlib", "urllib", "requests", "http"]
+    for b in blocked:
+        if b in name:
+            raise ImportError(f"Import of module {name!r} is strictly prohibited")
+    return __import__(name, globals, locals, fromlist, level)
+
 def execute_code_safely(code: str, persistent_vars: Dict[str, Any], timeout: int = 30) -> Dict[str, Any]:
     """
     Executes Python code in a controlled environment.
@@ -39,7 +46,7 @@ def execute_code_safely(code: str, persistent_vars: Dict[str, Any], timeout: int
             "ValueError": ValueError,
             "TypeError": TypeError,
             "MemoryError": MemoryError,
-            "__import__": __import__,
+            "__import__": safe_import,
         },
         "pd": pd,
         "np": np,

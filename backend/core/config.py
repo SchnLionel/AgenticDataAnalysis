@@ -7,7 +7,8 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # Security
-    SECRET_KEY: str = "your-secret-key-for-jwt"
+    # Security
+    SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     DATABASE_URL: str = "postgresql://postgres:postgres@postgres:5432/datastream"
@@ -16,6 +17,7 @@ class Settings(BaseSettings):
     DB_NAME: str = "datastream"
     REDIS_URL: str = "redis://redis:6379/0"
     
+    # AI Keys
     OPENAI_API_KEY: str = ""
     GROQ_API_KEY: str = ""
     
@@ -39,10 +41,13 @@ class Settings(BaseSettings):
         import sys
         # Skip validation during tests
         is_test = "pytest" in sys.modules or "pytest" in os.environ.get("PYTEST_CURRENT_TEST", "") or "test" in os.environ.get("DATABASE_URL", "")
+        if is_test and not self.SECRET_KEY:
+            self.SECRET_KEY = "test-secret-key-for-testing-purposes-only"
+            
         if not is_test:
-            if self.SECRET_KEY == "your-secret-key-for-jwt" or len(self.SECRET_KEY) < 16:
+            if not self.SECRET_KEY or self.SECRET_KEY == "your-secret-key-for-jwt" or len(self.SECRET_KEY) < 16:
                 raise ValueError(
-                    "CRITICAL SECURITY ERROR: SECRET_KEY is set to the insecure default or is too short! "
+                    "CRITICAL SECURITY ERROR: SECRET_KEY is missing, set to the insecure default, or is too short! "
                     "You must configure a strong, unique SECRET_KEY (e.g. via environment variables) for production/real-use."
                 )
             if not self.GROQ_API_KEY:

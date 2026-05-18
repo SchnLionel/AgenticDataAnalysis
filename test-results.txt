@@ -25,40 +25,24 @@ backend/venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854
   /home/ubuntu/AgenticDataAnalysis/backend/venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
     from crypt import crypt as _crypt
 
-backend/api/schemas/auth.py:10
-  /home/ubuntu/AgenticDataAnalysis/backend/api/schemas/auth.py:10: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
-    class User(UserBase):
-
-backend/api/schemas/sessions.py:9
-  /home/ubuntu/AgenticDataAnalysis/backend/api/schemas/sessions.py:9: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
-    class MessageBase(BaseModel):
-
-backend/api/schemas/sessions.py:25
-  /home/ubuntu/AgenticDataAnalysis/backend/api/schemas/sessions.py:25: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
-    class Session(SessionBase):
-
-backend/api/schemas/sessions.py:41
-  /home/ubuntu/AgenticDataAnalysis/backend/api/schemas/sessions.py:41: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
-    class Dataset(DatasetBase):
-
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ================================ tests coverage ================================
 _______________ coverage: platform linux, python 3.12.3-final-0 ________________
 
 Name                                      Stmts   Miss  Cover
 -------------------------------------------------------------
-backend/agents/agent_manager.py             108     36    67%
+backend/agents/agent_manager.py             136     51    62%
 backend/api/main.py                          35      4    89%
 backend/api/routes/auth.py                   40      4    90%
 backend/api/routes/sessions.py               69     22    68%
-backend/api/schemas/auth.py                  15      0   100%
-backend/api/schemas/sessions.py              44      0   100%
+backend/api/schemas/auth.py                  18      0   100%
+backend/api/schemas/sessions.py              47      0   100%
 backend/celery_app.py                         5      5     0%
-backend/core/config.py                       19      0   100%
+backend/core/config.py                       31      5    84%
 backend/core/security.py                     17      1    94%
 backend/db/database.py                       11      4    64%
 backend/db/models.py                         55      0   100%
-backend/security/code_sandbox.py             34      2    94%
+backend/security/code_sandbox.py             40      3    92%
 backend/tasks.py                             18     18     0%
 backend/tests/conftest.py                    43      0   100%
 backend/tests/test_agent_integration.py      25      0   100%
@@ -67,5 +51,5 @@ backend/tests/test_auth.py                   17      0   100%
 backend/tests/test_persistence.py            35      2    94%
 backend/tests/test_security.py               21      0   100%
 -------------------------------------------------------------
-TOTAL                                       638     98    85%
-======================== 13 passed, 5 warnings in 6.50s ========================
+TOTAL                                       690    119    83%
+======================== 13 passed, 1 warning in 10.86s ========================
